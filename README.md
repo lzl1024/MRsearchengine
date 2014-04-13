@@ -1,7 +1,12 @@
 MRsearchengine
 ==============
 
+compile code: 
+
+ant
+
 run code:
+
 hadoop jar term-latest.jar -program invertedlist -input data/small_data.txt -output data/invertedlist -stopword data/stopword.txt
 
 
