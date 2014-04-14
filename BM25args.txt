@@ -1,0 +1,4 @@
+N=10000
+k_1=1.2
+b=0.75
+query=hunter gun

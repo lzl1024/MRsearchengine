@@ -11,8 +11,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class InvertedListReducer extends Reducer<Text, Text, Text, Text> {
 	
 	 /**
-     * Accumulate the partial product sum into the product sum, similar with
-     * word count reducer.
+     * Get the vector map for a word, and output it
+     * Key is the word, Value is its vector
      */
     @Override
     protected void reduce(Text key, Iterable<Text> value, Context context)
