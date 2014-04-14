@@ -14,8 +14,8 @@ public class Entry {
 		if (program.equals("invertedlist"))
 			mapred.invertedlist.Driver.main(args);
 		
-		else if (program.equals("ngramcount"))
-			mapred.ngramcount.Driver.main(args);
+		else if (program.equals("querysearch"))
+			mapred.querysearch.Driver.main(args);
 	
 
 		long end = System.currentTimeMillis();
