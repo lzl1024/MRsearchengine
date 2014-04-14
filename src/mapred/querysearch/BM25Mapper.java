@@ -43,9 +43,10 @@ public class BM25Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable>
         		
         		output_key.set(elements[0]);
         		
-        		//TODO: BM25
+        		// get BM25 score
         		Double score = Double.parseDouble(elements[1]);
-        		output_value.set(score);
+        		output_value.set(computeBM25Score(score, vector.length));
+        		//output_value.set(score);
         		
         		context.write(output_key, output_value);
         	}
@@ -53,6 +54,24 @@ public class BM25Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable>
     }
 	
 	
+	/**
+	 * Compute the BM25 score of the particular document
+	 * 
+	 * @param score
+	 * @param vectorLen 
+	 * @return
+	 */
+	private double computeBM25Score(Double score, int vectorLen) {
+	    
+        //result = score / (double)(score + BM25Mapper.k1 * ((1 - BM25Mapper.b)+
+        //        b*(doc_len / avg_doclen));
+
+		double result = Math.log((BM25Mapper.N - vectorLen + 0.5) / (double)(vectorLen + 0.5));
+		result *= score / (double)(score + BM25Mapper.k1 * ((1 - BM25Mapper.b)));
+	    return result;
+    }
+
+
 	/**
 	 * Setup the mapper to read the stopwords from the file
 	 */
