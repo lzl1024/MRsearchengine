@@ -34,8 +34,15 @@ public class Driver {
 	 */
 	private static void getRankedDocs(String input, String output) 
 		throws IOException, ClassNotFoundException, InterruptedException {
-	    // TODO Auto-generated method stub
-	    
+		Configuration conf = new Configuration();
+
+        Optimizedjob job = new Optimizedjob(conf, input, output,
+                "Sort BM25 score");
+        
+        job.setClasses(BM25SortMapper.class, BM25SortReducer.class, null);
+        job.setMapOutputClasses(DoubleWritable.class, Text.class);
+        job.setSortComparatorClass(ScoreComparator.class);
+        job.run();
     }
 
 	
@@ -63,6 +70,5 @@ public class Driver {
         		BM25Reducer.class);
         job.setMapOutputClasses(Text.class, DoubleWritable.class);
         job.run();
-	    
     }
 }
