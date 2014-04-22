@@ -10,6 +10,7 @@ import mapred.util.SimpleParser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 public class Driver {
@@ -18,14 +19,66 @@ public class Driver {
 
         String input = parser.get("input");
         String output = parser.get("output");
+        String expandInput = parser.get("expIn");
+        String expandOutput = parser.get("expOut");
         String tmpdir = parser.get("tmpdir");
         String arguments = parser.get("args");
         
+        expandQuery(expandInput, tmpdir + "/expand", arguments);
+        condenseQuery(tmpdir + "/expand", expandOutput);
         getBM25Score(input, tmpdir + "/bm25score", arguments);
         getRankedDocs(tmpdir + "/bm25score", output);
 
     }
 
+	
+	/**
+	 * Expands query input by the user
+	 * 
+	 * @param input
+	 * @param output
+	 * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+	 */
+	private static void expandQuery(String input, String output, String arguments) 
+		throws IOException, ClassNotFoundException, InterruptedException {
+		
+		Configuration conf = new Configuration();
+		conf.set("args", arguments);
+
+        Optimizedjob job = new Optimizedjob(conf, input, output,
+                "expand user given query");
+        
+        job.setClasses(ExpandQueryMapper.class, ExpandQueryReducer.class,
+        		null);
+        job.setMapOutputClasses(Text.class, DoubleWritable.class);
+        job.run();
+    }
+	
+	/**
+	 * Condenses query after expanded to 25 best words
+	 * 
+	 * @param input
+	 * @param output
+	 * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+	 */
+	private static void condenseQuery(String input, String output) 
+		throws IOException, ClassNotFoundException, InterruptedException {
+		
+		Configuration conf = new Configuration();
+
+        Optimizedjob job = new Optimizedjob(conf, input, output,
+                "condense query again");
+        
+        job.setClasses(CondenseQueryMapper.class, CondenseQueryReducer.class,
+        		null);
+        job.setMapOutputClasses(LongWritable.class, Text.class);
+        job.run();
+    }
+	
 	/**
 	 * Sort the score of document to get the final rank of the documents
 	 * 
