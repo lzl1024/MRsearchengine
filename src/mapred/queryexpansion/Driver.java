@@ -22,7 +22,6 @@ public class Driver {
         String input = parser.get("input");
         String output = parser.get("output");
         String tmpdir = parser.get("tmpdir");
-        String arguments = parser.get("args");
         
         computeDotProducts(input, tmpdir + "/queryExpansion1");
         accumulateDotProducts(tmpdir + "/queryExpansion1", tmpdir + "/queryExpansion2");
