@@ -27,15 +27,17 @@ public class ExpandMatReducer extends Reducer<Text, Text, Text, Text>{
     		
     		WordCountPair wc = new WordCountPair(word, count);
     		
-    		topWords.add(wc);
+    		topWords.offer(wc);
+    		// only take the top 25 or until words run out
+    		if (topWords.size() > 25) {
+    			topWords.poll();
+    		}
     	}
     	
     	// create list of sorted pairings
     	StringBuilder output_value = new StringBuilder();
     	
-    	// only take the top 25 or until words run out
-    	for(int i = 0; i < 25 || topWords.size() == 0; i++){
-    	
+    	while (topWords.size() > 0) {
     		output_value.append(topWords.poll() + ">>");
     		
     	}
@@ -68,7 +70,7 @@ public class ExpandMatReducer extends Reducer<Text, Text, Text, Text>{
     	public int compareTo(WordCountPair that){
     		
     		// opposite of natural ordering to create a max heap
-    		return (that.count - this.count);
+    		return (this.count - that.count);
     		
     	}
     }

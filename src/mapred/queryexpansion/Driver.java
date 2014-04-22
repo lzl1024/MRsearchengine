@@ -3,16 +3,11 @@ package mapred.queryexpansion;
 import java.io.IOException;
 
 import mapred.job.Optimizedjob;
-import mapred.querysearch.BM25Mapper;
-import mapred.querysearch.BM25Reducer;
-import mapred.querysearch.BM25SortMapper;
-import mapred.querysearch.BM25SortReducer;
-import mapred.querysearch.ScoreComparator;
 import mapred.util.SimpleParser;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.VIntWritable;
 
 public class Driver {
 
@@ -30,7 +25,7 @@ public class Driver {
     }
 
 	/**
-	 * Sort the score of document to get the final rank of the documents
+	 * Compute the dot products pieces for word pairs
 	 * 
 	 * @param input
 	 * @param output
@@ -52,8 +47,7 @@ public class Driver {
 
 	
 	/**
-	 * Compute the BM25 score of each Document and output to the tmp
-	 * file
+	 * Accumulate dot products to get the similarity score of word pairs
 	 * 
 	 * @param input
 	 * @param output
@@ -69,11 +63,21 @@ public class Driver {
         Optimizedjob job = new Optimizedjob(conf, input, output,
                 "Accumulate dot products");
         
-        job.setClasses(ProdAccumMapper.class, ProdAccumReducer.class, null);
-        job.setMapOutputClasses(Text.class, DoubleWritable.class);
+        job.setClasses(ProdAccumMapper.class, ProdAccumReducer.class, ProdAccumReducer.class);
+        job.setMapOutputClasses(Text.class, VIntWritable.class);
         job.run();
     }
 	
+	
+	/**
+	 * Create query expansion matrix 
+	 *  
+	 * @param input
+	 * @param output
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws InterruptedException
+	 */
 	private static void createExpansionMat(String input, String output) 
 			throws IOException, ClassNotFoundException, InterruptedException {
 			

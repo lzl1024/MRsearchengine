@@ -21,29 +21,27 @@ public class DotProdMapper extends Mapper<LongWritable, Text, Text, Text>{
 	    // parse the word and its vector
 	    int splitIndex = line.indexOf("\t");
 	    String word = line.substring(0, splitIndex).trim();
-	    String sites = line.substring(splitIndex);
+	    String sites = line.substring(splitIndex+1);
+	    Text output_key = new Text();
+	    Text output_value = new Text();
 	    
 	    String [] pairs = sites.split(">>");
 	    
-	    for(int i = 0; i < pairs.length; i++){
-	    	
-	    	String pair = pairs[i].trim();
-	    	
-	    	// pass empty strings
-	    	if(pair.equals("")) continue;
-	    	
+	    for(String pair : pairs){	    	
 	    	// split out the site and occurrences
-	    	String [] splitPair = sites.split(" ");
+	    	String [] splitPair = pair.split(" ");
 	    	
-	    	String site = splitPair[0];
+	    	// set output_key to be the site
+	    	output_key.set(splitPair[0]);
 	    	String count = splitPair[1];
 	    	
 	    	StringBuilder sb = new StringBuilder(word);
 	    	sb.append(" ");
 	    	sb.append(count);
+	    	output_value.set(sb.toString());
 	    	
 	    	// output site word/count pair
-	    	context.write(new Text(site), new Text(sb.toString()) );
+	    	context.write(output_key, output_value);
 	    }
 	}
 	

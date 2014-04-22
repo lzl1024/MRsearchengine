@@ -11,12 +11,13 @@ public class Entry {
 
 		long start = System.currentTimeMillis();
 
-		if (program.equals("invertedlist"))
+		if (program.equals("invertedlist")) {
 			mapred.invertedlist.Driver.main(args);
-		
-		else if (program.equals("querysearch"))
+		} else if (program.equals("querysearch")) {
 			mapred.querysearch.Driver.main(args);
-	
+		} else if (program.equals("queryexpansion")) {
+			mapred.queryexpansion.Driver.main(args);
+		}
 
 		long end = System.currentTimeMillis();
 

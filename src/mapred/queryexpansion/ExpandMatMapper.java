@@ -2,24 +2,28 @@ package mapred.queryexpansion;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class ExpandMatMapper extends Mapper<Text, DoubleWritable, Text, Text>{
+public class ExpandMatMapper extends Mapper<LongWritable, Text, Text, Text>{
 	
 	/**
 	 * The mapper splits up the product key, allowing both factors to be used as keys and values
 	 */
 	@Override
-    protected void map(Text key, DoubleWritable value, Context context)
+    protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
+		String line = value.toString();
 		
+		// parse the word pair and its score
+		
+        String[] e = line.split("\t");
 		// get the count
-		String count = value.toString();
+		String count = e[1];
 		
 		// split up the product factors
-		String [] prodPair = key.toString().split(" ");
+		String [] prodPair = e[0].split(" ");
 		
 		String wordA = prodPair[0];
 		String wordB = prodPair[1];

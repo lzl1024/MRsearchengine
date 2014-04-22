@@ -1,13 +1,14 @@
 package mapred.queryexpansion;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.ArrayList;
 
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-public class DotProdReducer extends Reducer<Text, Text, Text, DoubleWritable>{
+public class DotProdReducer extends Reducer<Text, Text, Text, VIntWritable>{
+	
 
 	/**
 	 * Compute dot product pairs for all words, based on sites
@@ -16,51 +17,48 @@ public class DotProdReducer extends Reducer<Text, Text, Text, DoubleWritable>{
     protected void reduce(Text key, Iterable<Text> value, Context context)
             throws IOException, InterruptedException {
 
-    	HashSet<String> computedProducts = new HashSet<String>();
+    	ArrayList<Integer> appears = new ArrayList<Integer>();
+    	ArrayList<String> words = new ArrayList<String>();
+    	
+    	Text output_key = new Text();
+    	VIntWritable output_value = new VIntWritable();
+    	
+    	// get the appears and words from iterable value
+    	for (Text pair : value) {
+    		String [] factorArrA = pair.toString().split(" ");
+        	
+    		words.add(factorArrA[0]);
+        	appears.add(Integer.parseInt(factorArrA[1]));
+    	}
     	
     	// for each value, iterate through all values and compute products
-        for (Text prodFactorA : value) {
-        	
-        	String [] factorArrA = value.toString().split(" ");
-        	String wordA = factorArrA[0];
-        	String valueAstr = factorArrA[1];
-        	
-        	for(Text prodFactorB : value){
-        		
-        		if(prodFactorB.toString().equals(prodFactorA.toString())) continue;
-        		
-            	String [] factorArrB = value.toString().split(" ");
-            	String wordB = factorArrB[0];
-            	String valueBstr = factorArrB[1];
+        for (int i = 0; i < appears.size()-1; i++) { 	
+        	for(int j = i+1; j < appears.size(); j++){
+            	String wordA = words.get(i);
+            	String wordB = words.get(j);
             	
-            	// all products for this word were already computed, nothing to do ehre
-            	if(computedProducts.contains(wordB)) continue;
             	
             	StringBuilder sb = new StringBuilder();
-            	
             	// words need to be lexigraphically ordered so all products can be properly accumulated
-            	if(wordA.compareTo(wordB) > 0){
-            		
+            	if(wordA.compareTo(wordB) > 0){		
             		sb.append(wordA);
+            		sb.append(" ");
             		sb.append(wordB);
-            	}else{
-            		
+            	}else{          		
             		sb.append(wordB);
+            		sb.append(" ");
             		sb.append(wordA);
             	}
             	
-            	String output_key = sb.toString();
+            	int valueA = appears.get(i);
+            	int valueB = appears.get(j);
+            	int product = valueA*valueB;
             	
-            	int valueA = Integer.parseInt(valueAstr);
-            	int valueB = Integer.parseInt(valueBstr);
-            	double product = valueA*valueB;
-            	
+            	output_key.set(sb.toString());
+            	output_value.set(product);
             	// output the dot product
-            	context.write(new Text(sb.toString()), new DoubleWritable(product));	
+            	context.write(output_key, output_value);	
         	}
-        	
-        	//all product pairs for this word computed, any products containing it should not be revisited
-        	computedProducts.add(wordA);
         }
     }
 }
