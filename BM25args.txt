@@ -1,4 +1,4 @@
-N=10000
+N=4004480
 k_1=1.2
 b=0.01
 query=hunter gun

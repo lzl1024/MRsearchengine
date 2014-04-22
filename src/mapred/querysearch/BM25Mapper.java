@@ -7,6 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -78,10 +80,14 @@ public class BM25Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable>
     @Override
     protected void setup(Context context) {
     	HashMap<String, String> argMap = new HashMap<String, String>();
-    	String argFile = context.getConfiguration().get("args");
+    	//String argFile = context.getConfiguration().get("args");
     	
-    	try {
-	        BufferedReader reader = new BufferedReader(new FileReader(argFile));
+    	try {		
+    		// run on AWS
+            Path p = DistributedCache.getLocalCacheFiles(context.getConfiguration())[0];
+            BufferedReader reader = new BufferedReader(new FileReader(p.toString()));
+    		
+            //BufferedReader reader = new BufferedReader(new FileReader(argFile));
 	        String line;
 	        // read the argument file of BM25 algorithm and query
 	        while ((line = reader.readLine()) != null) {

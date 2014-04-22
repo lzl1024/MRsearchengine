@@ -1,11 +1,14 @@
 package mapred.querysearch;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import mapred.job.Optimizedjob;
 import mapred.util.SimpleParser;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 
@@ -61,6 +64,13 @@ public class Driver {
 		
 		Configuration conf = new Configuration();
 		conf.set("args", arguments);
+		
+    	try {
+	        DistributedCache.addCacheFile(new URI(arguments), conf);
+        } catch (URISyntaxException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
 
         Optimizedjob job = new Optimizedjob(conf, input, output,
                 "Get BM25 score of all docs");

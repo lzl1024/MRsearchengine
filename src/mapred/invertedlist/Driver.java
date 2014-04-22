@@ -1,9 +1,12 @@
 package mapred.invertedlist;
 
+import java.net.URI;
+
 import mapred.job.Optimizedjob;
 import mapred.util.SimpleParser;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.Text;
 
 public class Driver {
@@ -28,6 +31,9 @@ public class Driver {
 	            throws Exception {
 	    	Configuration config = new Configuration();
 	    	config.set("stopword", stopword);
+	    	
+	    	DistributedCache.addCacheFile(new URI(stopword), config);
+	    	
 	        Optimizedjob job = new Optimizedjob(config, input, output,
 	                "Get inverted list of the document set");
 	        job.setClasses(InvertedListMapper.class, InvertedListReducer.class, null);
