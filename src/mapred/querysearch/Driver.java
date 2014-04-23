@@ -25,10 +25,11 @@ public class Driver {
         String tmpdir = parser.get("tmpdir");
         String arguments = parser.get("args");
         
+        
         expandQuery(expandInput,  tmpdir + "/expand", arguments);
         //condenseQuery(tmpdir + "/expand", expandOutput);
         
-        String expandWords = Hooker.hook("/" + tmpdir + "/expand/");
+        String expandWords = Hooker.hook(tmpdir + "/expand");
         System.out.println("Expanded Words:" + expandWords);
         
         getBM25Score(input, tmpdir + "/bm25score", arguments, expandWords);
@@ -61,6 +62,8 @@ public class Driver {
         Optimizedjob job = new Optimizedjob(conf, input, output,
                 "expand user given query");
         
+        job.setNumReduceTasks(1);
+        job.setReduceJobs(1);
         job.setClasses(ExpandQueryMapper.class, ExpandQueryReducer.class,
         		null);
         job.setMapOutputClasses(Text.class, VIntWritable.class);
