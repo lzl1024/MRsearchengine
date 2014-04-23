@@ -107,6 +107,7 @@ public class BM25Mapper extends Mapper<LongWritable, Text, Text, DoubleWritable>
     	N = Integer.parseInt(argMap.get("N"));
     	b = Double.parseDouble(argMap.get("b"));
     	querySet = new HashSet<String>(Arrays.asList(argMap.get("query").split(" ")));
+    	querySet.addAll(Arrays.asList(context.getConfiguration().get("expand").split(" ")));
     }
 
 }

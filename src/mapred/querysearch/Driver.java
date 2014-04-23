@@ -12,6 +12,7 @@ import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.VIntWritable;
 
 public class Driver {
 	public static void main(String args[]) throws Exception {
@@ -20,13 +21,17 @@ public class Driver {
         String input = parser.get("input");
         String output = parser.get("output");
         String expandInput = parser.get("expIn");
-        String expandOutput = parser.get("expOut");
+        //String expandOutput = parser.get("expOut");
         String tmpdir = parser.get("tmpdir");
         String arguments = parser.get("args");
         
-        expandQuery(expandInput, tmpdir + "/expand", arguments);
-        condenseQuery(tmpdir + "/expand", expandOutput);
-        getBM25Score(input, tmpdir + "/bm25score", arguments);
+        expandQuery(expandInput,  tmpdir + "/expand", arguments);
+        //condenseQuery(tmpdir + "/expand", expandOutput);
+        
+        String expandWords = Hooker.hook("/" + tmpdir + "/expand/");
+        System.out.println("Expanded Words:" + expandWords);
+        
+        getBM25Score(input, tmpdir + "/bm25score", arguments, expandWords);
         getRankedDocs(tmpdir + "/bm25score", output);
 
     }
@@ -46,13 +51,19 @@ public class Driver {
 		
 		Configuration conf = new Configuration();
 		conf.set("args", arguments);
+		
+		try {
+	        DistributedCache.addCacheFile(new URI(arguments), conf);
+        } catch (URISyntaxException e) {
+	        e.printStackTrace();
+        }
 
         Optimizedjob job = new Optimizedjob(conf, input, output,
                 "expand user given query");
         
         job.setClasses(ExpandQueryMapper.class, ExpandQueryReducer.class,
         		null);
-        job.setMapOutputClasses(Text.class, DoubleWritable.class);
+        job.setMapOutputClasses(Text.class, VIntWritable.class);
         job.run();
     }
 	
@@ -112,11 +123,13 @@ public class Driver {
      * @throws ClassNotFoundException
      * @throws InterruptedException
 	 */
-	private static void getBM25Score(String input, String output, String arguments) 
+	private static void getBM25Score(String input, String output, 
+			String arguments, String expand) 
 		throws IOException, ClassNotFoundException, InterruptedException {
 		
 		Configuration conf = new Configuration();
 		conf.set("args", arguments);
+		conf.set("expand", expand);
 		
     	try {
 	        DistributedCache.addCacheFile(new URI(arguments), conf);

@@ -47,12 +47,12 @@ public class ExpandMatReducer extends Reducer<Text, Text, Text, Text>{
     	
     }
     
-    class WordCountPair implements Comparable<WordCountPair>{
+    public static class WordCountPair implements Comparable<WordCountPair>{
     	
-    	String word;
-    	int count;
+    	public String word;
+    	public int count;
     	
-    	WordCountPair(String word, int count){
+    	public WordCountPair(String word, int count){
     		
     		this.word = word;
     		this.count = count;

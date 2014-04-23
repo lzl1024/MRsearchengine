@@ -17,9 +17,8 @@ public class TestMain {
 	static HashSet<String> querySet;
 
 	private static String argFile = "BM25args.txt";
-	private static String inverted_listFile = "inverted_list.txt";
+	private static String inverted_listFile = "inverted_list_large.txt";
 	private static String doc_score = "word_score.txt";
-	private static String pick_up_file = "tmp.txt";
 	private static int split_num = 10;
 	private static String final_output = "result.txt";
 
@@ -32,7 +31,7 @@ public class TestMain {
 		queryExpansion();
 		System.out.println("Expansion time cost:" +  (System.currentTimeMillis() - time));
 
-		querySearch(inverted_listFile, doc_score, pick_up_file);
+		querySearch(inverted_listFile, doc_score);
 		System.out.println("Search time cost:" +  (System.currentTimeMillis() - time));
 		
 		scoreSort(doc_score, split_num, final_output);
@@ -112,84 +111,66 @@ public class TestMain {
 
 
 	// search query based on query set
-	private static void querySearch(String invert_list, String output,
-	        String tmp) {
+	private static void querySearch(String invert_list, String output) {
 		try {
 			BufferedReader reader1 = new BufferedReader(new FileReader(
 			        invert_list));
-			String line;
-			PrintWriter writer = new PrintWriter(new FileWriter(tmp));
-
-			// read the argument file of BM25 algorithm and query
+			PrintWriter writer = new PrintWriter(new FileWriter(output));
+			String line = null;
+			
 			while ((line = reader1.readLine()) != null) {
 				// parse the word and its vector
 				int splitIndex = line.indexOf("\t");
 				String word = line.substring(0, splitIndex).trim();
-
-				// only handle the word that in the querySet
+				
 				if (querySet.contains(word)) {
-					// write to the tmp file
-					writer.println(line);
+
+    				String[] vector = line.substring(splitIndex + 1).split(">>");
+    				
+    				System.out.println("Vector length: " + vector.length);
+    				long time = System.currentTimeMillis();
+    
+    				for (String vectorElement : vector) {
+    					// get the single word
+    					String[] elements = vectorElement.split(" ");
+    
+    					// go through the tmp file to get the score of the document
+    					BufferedReader reader2 = new BufferedReader(new FileReader(
+    							invert_list));
+    					
+    					double score = 0;
+    					String line2;
+    					while ((line2 = reader2.readLine()) != null) {
+    						// parse the word and its vector
+    						int splitIndex2 = line2.indexOf("\t");
+    						String word2 = line2.substring(0, splitIndex2).trim();
+    						
+    						if (querySet.contains(word2) && !word2.equals(word)) {
+    
+    						String[] vector2 = line2.substring(splitIndex2 + 1).split(">>");
+        						for (String vectorElement2 : vector2) {
+        							// get the single doc
+        							String[] elements2 = vectorElement2.split(" ");
+        							
+        							if (elements2[0].equals(elements[0])) {
+        								// get BM25 score
+        								double iniscore = Double.parseDouble(elements2[1]);
+        								score += computeBM25Score(iniscore, vector2.length);
+        							}
+        					
+        						}
+    						}
+    					}
+    					
+    					writer.println(elements[0] + " " + score);
+    					reader2.close();
+    					System.out.println("time: " + (System.currentTimeMillis() - time));
+    				}
 				}
-			}
-			reader1.close();
-			writer.close();
-
-			// read file from tmp and get query score
-			reader1 = new BufferedReader(new FileReader(tmp));
-			writer = new PrintWriter(new FileWriter(output));
-
-			while ((line = reader1.readLine()) != null) {
-				// parse the word and its vector
-				int splitIndex = line.indexOf("\t");
-				//String word = line.substring(0, splitIndex).trim();
-
-				String[] vector = line.substring(splitIndex + 1).split(">>");
-
-				for (String vectorElement : vector) {
-					// get the single word
-					String[] elements = vectorElement.split(" ");
-
-					// go through the tmp file to get the score of the document
-					BufferedReader reader2 = new BufferedReader(new FileReader(
-					        tmp));
-					
-					double score = 0;
-					String line2;
-					while ((line2 = reader2.readLine()) != null) {
-						// parse the word and its vector
-						int splitIndex2 = line2.indexOf("\t");
-						//String word2 = line2.substring(0, splitIndex2).trim();
-
-						String[] vector2 = line2.substring(splitIndex2 + 1).split(">>");
-
-						for (String vectorElement2 : vector2) {
-							// get the single doc
-							String[] elements2 = vectorElement2.split(" ");
-							
-							if (elements2[0].equals(elements[0])) {
-								// get BM25 score
-								double iniscore = Double.parseDouble(elements2[1]);
-								score += computeBM25Score(iniscore, vector2.length);
-							}
-					
-						}
-					}
-					
-					writer.println(elements[0] + " " + score);
-					reader2.close();
-				}
-
 			}
 
 			reader1.close();
 			writer.close();
-			
-	        // clean up workspace
-	        File f = new File(tmp);
-	        if (f.exists()) {
-	        	f.delete();
-	        }
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

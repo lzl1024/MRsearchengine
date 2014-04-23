@@ -9,12 +9,12 @@ import java.util.HashSet;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class ExpandQueryMapper extends Mapper<LongWritable, Text, Text, DoubleWritable>{
+public class ExpandQueryMapper extends Mapper<LongWritable, Text, Text, VIntWritable>{
 	
 	static HashSet<String> querySet;
 	
@@ -34,7 +34,7 @@ public class ExpandQueryMapper extends Mapper<LongWritable, Text, Text, DoubleWr
         // only handle the word that in the querySet
         if (querySet.contains(word)) {
         	Text output_key = new Text();
-        	DoubleWritable output_value = new DoubleWritable();
+        	VIntWritable output_value = new VIntWritable();
         	
         	String[] vector = line.substring(splitIndex+1).split(">>");
         	
@@ -44,7 +44,7 @@ public class ExpandQueryMapper extends Mapper<LongWritable, Text, Text, DoubleWr
         		
         		
         		output_key.set(elements[0]);
-        		output_value.set(Double.parseDouble(elements[1]));
+        		output_value.set(Integer.parseInt(elements[1]));
         		
         		context.write(output_key, output_value);
         	}
